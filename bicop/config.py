@@ -46,10 +46,10 @@ class ParseError(Exception):
         self.reason = reason
 
     def __str__(self):
-        return '%s[%d]: %s' % (self.file, self.line, self.reason)
+        return '{0}[{1}]: {2}'.format(self.file, str(self.line), self.reason)
 
 
-def parse(input, filename=None, dictclass=dict):
+def parse(_input, filename=None, dictclass=dict):
     """Read a file in a ISC-like config style.
 
     The input can be either a file-like object or a string. If a string
@@ -59,69 +59,67 @@ def parse(input, filename=None, dictclass=dict):
     The contents from the file as returned as a standard python dictionary.
     """
 
-    tokenizer = shlex.shlex(input, filename)
+    tokenizer = shlex.shlex(_input, filename)
     tokenizer.wordchars += '/._'
-    return _Parse(tokenizer, dictclass=dictclass)
+    return _parse(tokenizer, dictclass=dictclass)
 
 
-def _Decode(token):
+def _decode(token):
     if token[0] == '"':
         return token[1:-1]
     else:
         return int(token)
 
 
-def _Parse(input, dictclass=dict):
+def _parse(_input, dictclass=dict):
     (type_list, type_dict) = (1, 2)
     stack = []
     top = dictclass()
 
-    type = type_dict
+    _type = type_dict
 
     try:
-        command = input.get_token()
+        command = _input.get_token()
         while command:
             needsep = 1
             if command == '}':
                 (stack, top) = (stack[:-1], stack[-1])
-                type = type_dict
-            elif type == type_list:
-                top.append(_Decode(command))
+                _type = type_dict
+            elif _type == type_list:
+                top.append(_decode(command))
             else:
-                value = input.get_token()
+                value = _input.get_token()
                 if value == '{':
-                    one = input.get_token()
-                    two = input.get_token()
+                    one = _input.get_token()
+                    two = _input.get_token()
                     if two == ';':
-                        type = type_list
+                        _type = type_list
                         top[command] = []
                     else:
-                        type = type_dict
+                        _type = type_dict
                         top[command] = dictclass()
-                    input.push_token(two)
-                    input.push_token(one)
+                    _input.push_token(two)
+                    _input.push_token(one)
                     stack.append(top)
                     top = top[command]
                     needsep = 0
                 elif value == ';':
-                    raise ParseError(input.infile, input.lineno,
-                            'Unexpected separator found')
+                    raise ParseError(_input.infile, _input.lineno, 'Unexpected separator found')
                 else:
-                    top[command] = _Decode(value)
+                    top[command] = _decode(value)
 
             if needsep:
-                separator = input.get_token()
+                separator = _input.get_token()
                 if separator != ';':
-                    raise ParseError(input.infile, input.lineno,
-                            'Required separator missing')
+                    raise ParseError(_input.infile, _input.lineno, 'Required separator missing')
 
-            command = input.get_token()
+            command = _input.get_token()
     except ValueError:
-        raise ParseError(input.infile, input.lineno, 'Illegal value')
+        raise ParseError(_input.infile, _input.lineno, 'Illegal value')
     except IndexError:
-        raise ParseError(input.infile, input.lineno, 'Unexpected end of file')
+        raise ParseError(_input.infile, _input.lineno, 'Unexpected end of file')
 
     if stack:
-        raise ParseError(input.infile, input.lineno, 'Unexpected end of file')
+        raise ParseError(_input.infile, _input.lineno, 'Unexpected end of file')
 
     return top

@@ -6,15 +6,15 @@ from bicop.nestdict import NestedDict
 class NestedDictTests(TestCase):
     def testEmptyConstructor(self):
         n = NestedDict()
-        self.assertEqual(n.keys(), [])
+        self.assertEqual(list(n.keys()), [])
 
     def testFlatCopyConstructor(self):
         n = NestedDict(dict(one='one'))
-        self.assertEqual(n.items(), [('one', 'one')])
+        self.assertEqual(list(n.items()), [('one', 'one')])
 
     def testNestedCopyConstructor(self):
         n = NestedDict(dict(one=dict(two='two')))
-        self.assertEqual(n.items(), [('one', dict(two='two'))])
+        self.assertEqual(list(n.items()), [('one', dict(two='two'))])
 
     def testDirectGetItem(self):
         n = NestedDict(dict(one='one'))
@@ -57,7 +57,7 @@ class NestedDictTests(TestCase):
     def testDirectDelItem(self):
         n = NestedDict(dict(one=dict(two='two')))
         del n['one']
-        self.assertEqual(n.keys(), [])
+        self.assertEqual(list(n.keys()), [])
 
     def testRemoveShallowMissingItem(self):
         n = NestedDict(dict(one=dict(two='two')))
@@ -70,20 +70,20 @@ class NestedDictTests(TestCase):
     def testDeepDelItem(self):
         n = NestedDict(dict(one=dict(two='two')))
         del n['one']['two']
-        self.assertEqual(n.keys(), ['one'])
-        self.assertEqual(n['one'].keys(), [])
+        self.assertEqual(list(n.keys()), ['one'])
+        self.assertEqual(list(n['one'].keys()), [])
 
     def testSmartDeepDelItem(self):
         n = NestedDict(dict(one=dict(two='two')))
         del n['one/two']
-        self.assertEqual(n.keys(), ['one'])
-        self.assertEqual(n['one'].keys(), [])
+        self.assertEqual(list(n.keys()), ['one'])
+        self.assertEqual(list(n['one'].keys()), [])
 
     def testSmartDeepDelItemWithDifferentSeparator(self):
         n = NestedDict(dict(one=dict(two='two')), separator=':')
         del n['one:two']
-        self.assertEqual(n.keys(), ['one'])
-        self.assertEqual(n['one'].keys(), [])
+        self.assertEqual(list(n.keys()), ['one'])
+        self.assertEqual(list(n['one'].keys()), [])
 
     def testSetItem(self):
         n = NestedDict()

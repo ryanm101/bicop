@@ -3,11 +3,11 @@ from bicop.utils import same_type
 from bicop.utils import merge
 
 
-class base:
+class Base(object):
     pass
 
 
-class child(base):
+class Child(Base):
     pass
 
 
@@ -19,8 +19,8 @@ class SameTypeTests(TestCase):
         self.assertEqual(same_type('', 1), False)
 
     def testSubClass(self):
-        self.assertEqual(same_type(base(), child()), True)
-        self.assertEqual(same_type(child(), base()), True)
+        self.assertEqual(same_type(Base, Child), True)
+        self.assertEqual(same_type(Child, Base), True)
 
 
 class MergeTests(TestCase):
